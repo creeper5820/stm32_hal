@@ -48,43 +48,45 @@ namespace internal {
 
 }
 
+namespace gpio {
 #ifdef GPIOA_BASE
-template <uint8_t pin>
-using PA = internal::GPIO<GPIOA_BASE, internal::gpio_pin<pin>()>;
+    template <uint8_t pin>
+    using PA = internal::GPIO<GPIOA_BASE, internal::gpio_pin<pin>()>;
 #endif
 
 #ifdef GPIOB_BASE
-template <uint8_t pin>
-using PB = internal::GPIO<GPIOB_BASE, internal::gpio_pin<pin>()>;
+    template <uint8_t pin>
+    using PB = internal::GPIO<GPIOB_BASE, internal::gpio_pin<pin>()>;
 #endif
 
 #ifdef GPIOC_BASE
-template <uint8_t pin>
-using PC = internal::GPIO<GPIOC_BASE, internal::gpio_pin<pin>()>;
+    template <uint8_t pin>
+    using PC = internal::GPIO<GPIOC_BASE, internal::gpio_pin<pin>()>;
 #endif
 
 #ifdef GPIOD_BASE
-template <uint8_t pin>
-using PD = internal::GPIO<GPIOD_BASE, internal::gpio_pin<pin>()>;
+    template <uint8_t pin>
+    using PD = internal::GPIO<GPIOD_BASE, internal::gpio_pin<pin>()>;
 #endif
 
 #ifdef GPIOE_BASE
-template <uint8_t pin>
-using PE = internal::GPIO<GPIOE_BASE, internal::gpio_pin<pin>()>;
+    template <uint8_t pin>
+    using PE = internal::GPIO<GPIOE_BASE, internal::gpio_pin<pin>()>;
 #endif
 
 #ifdef GPIOF_BASE
-template <uint8_t pin>
-using PF = internal::GPIO<GPIOF_BASE, internal::gpio_pin<pin>()>;
+    template <uint8_t pin>
+    using PF = internal::GPIO<GPIOF_BASE, internal::gpio_pin<pin>()>;
 #endif
 
 #ifdef GPIOG_BASE
-template <uint8_t pin>
-using PG = internal::GPIO<GPIOG_BASE, internal::gpio_pin<pin>()>;
+    template <uint8_t pin>
+    using PG = internal::GPIO<GPIOG_BASE, internal::gpio_pin<pin>()>;
 #endif
 
 #ifdef GPIOH_BASE
-template <uint8_t pin>
-using PH = internal::GPIO<GPIOH_BASE, internal::gpio_pin<pin>()>;
+    template <uint8_t pin>
+    using PH = internal::GPIO<GPIOH_BASE, internal::gpio_pin<pin>()>;
 #endif
+}
 }

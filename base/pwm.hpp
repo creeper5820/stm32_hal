@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef TIM_HandleTypeDef
+
 #include "main.h"
 #include "tim.h"
 #include <cassert>
@@ -69,3 +71,5 @@ public:
     }
 };
 } // namespace base
+
+#endif
