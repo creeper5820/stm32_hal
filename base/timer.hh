@@ -1,6 +1,7 @@
 #pragma once
 
-#include "stm32f4xx_hal.h"
+#include "interface.hh"
+#include <cstdint>
 
 #ifdef TIM_HandleTypeDef
 #include "tim.h"
@@ -10,7 +11,14 @@ namespace hal::time {
 
 constexpr size_t activity_limit = 10;
 
-inline void delay(uint32_t ms) { HAL_Delay(ms - 1); }
+inline void delay(uint32_t ms) {
+    uint32_t start = uwTick;
+    uint32_t wait = ms - 1;
+    if (wait < HAL_MAX_DELAY)
+        wait += static_cast<uint32_t>(uwTickFreq);
+    while (uwTick - start < wait)
+        ;
+}
 
 #ifdef TIM_HandleTypeDef
 inline void delay(TIM_HandleTypeDef* htim, uint32_t tick) {

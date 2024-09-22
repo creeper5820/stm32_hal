@@ -3,9 +3,7 @@
 #include "interface.hh"
 
 namespace hal {
-
 namespace internal {
-
     // @brief calculate the address of the pin while compiling
     template <uint8_t index>
     constexpr uint16_t gpio_pin() {
@@ -23,26 +21,32 @@ namespace internal {
         };
 
         inline void set() {
-            reinterpret_cast<GPIO_TypeDef*>(port)->BSRR = pin;
+            pointer()->BSRR = pin;
         }
 
         inline void reset() {
-            reinterpret_cast<GPIO_TypeDef*>(port)->BSRR = (uint32_t)pin << 16U;
+            pointer()->BSRR = (uint32_t)pin << 16U;
         }
 
         inline void toggle() {
-            reinterpret_cast<GPIO_TypeDef*>(port)->BSRR
-                = ((reinterpret_cast<GPIO_TypeDef*>(port)->ODR & pin) << 16U)
-                | (~reinterpret_cast<GPIO_TypeDef*>(port)->ODR & pin);
+            pointer()->BSRR
+                = ((pointer()->ODR & pin) << 16U)
+                | (~pointer()->ODR & pin);
         }
 
         inline Status status() {
-            return static_cast<Status>((reinterpret_cast<GPIO_TypeDef*>(port)->IDR & pin) != (uint32_t)0);
+            return static_cast<Status>(
+                (pointer()->IDR & pin) != uint32_t(0));
         }
 
         struct gpio_token { };
+
+    private:
+        constexpr GPIO_TypeDef* pointer() {
+            return reinterpret_cast<GPIO_TypeDef*>(port);
+        }
     };
-}
+} // namespace internal
 
 namespace gpio {
 #ifdef GPIOA_BASE
@@ -97,5 +101,5 @@ namespace gpio {
     inline void toggle(gpio_concept auto&... gpio) {
         (gpio.toggle(), ...);
     }
-}
-}
+} // namespace gpio
+} // namespace hal
