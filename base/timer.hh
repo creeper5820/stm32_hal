@@ -2,22 +2,18 @@
 
 #include "stm32f4xx_hal.h"
 
-#include <cassert>
-#include <cstdint>
-
 #ifdef TIM_HandleTypeDef
 #include "tim.h"
 #endif
 
-namespace hal {
+namespace hal::time {
 
-constexpr std::size_t activity_limit = 10;
+constexpr size_t activity_limit = 10;
 
 inline void delay(uint32_t ms) { HAL_Delay(ms - 1); }
 
 #ifdef TIM_HandleTypeDef
-inline void delay(TIM_HandleTypeDef* htim, uint32_t tick)
-{
+inline void delay(TIM_HandleTypeDef* htim, uint32_t tick) {
     htim->Instance->CNT = 0;
     HAL_TIM_Base_Start(htim);
 
@@ -32,16 +28,14 @@ public:
     using Callback = void (*)(void);
 
     Timer(TIM_HandleTypeDef* htim)
-        : htim_(htim)
-    {
+        : htim_(htim) {
     }
 
     void start() { HAL_TIM_Base_Start_IT(htim_); }
 
     void stop() { HAL_TIM_Base_Stop_IT(htim_); }
 
-    void callback(TIM_HandleTypeDef* htim)
-    {
+    void callback(TIM_HandleTypeDef* htim) {
         if (htim != htim_)
             return;
 
@@ -53,8 +47,7 @@ public:
         }
     }
 
-    void register_activity(uint16_t tick, Callback callback)
-    {
+    void register_activity(uint16_t tick, Callback callback) {
         assert(activity_size_ < activity_limit);
 
         activity_size_++;

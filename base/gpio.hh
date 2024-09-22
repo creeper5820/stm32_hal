@@ -8,8 +8,7 @@ namespace internal {
 
     // @brief calculate the address of the pin while compiling
     template <uint8_t index>
-    constexpr uint16_t gpio_pin()
-    {
+    constexpr uint16_t gpio_pin() {
         static_assert(index < 16 && index > -1, "天呐! 你的PIN是不存在的!");
         return (0x0001 * (1 << index % 4)) << (index & ~0b11);
     }
@@ -23,29 +22,26 @@ namespace internal {
             RESET = 1
         };
 
-        static inline void set()
-        {
+        inline void set() {
             reinterpret_cast<GPIO_TypeDef*>(port)->BSRR = pin;
         }
 
-        static inline void reset()
-        {
+        inline void reset() {
             reinterpret_cast<GPIO_TypeDef*>(port)->BSRR = (uint32_t)pin << 16U;
         }
 
-        static inline void toggle()
-        {
+        inline void toggle() {
             reinterpret_cast<GPIO_TypeDef*>(port)->BSRR
                 = ((reinterpret_cast<GPIO_TypeDef*>(port)->ODR & pin) << 16U)
                 | (~reinterpret_cast<GPIO_TypeDef*>(port)->ODR & pin);
         }
 
-        static inline Status status()
-        {
+        inline Status status() {
             return static_cast<Status>((reinterpret_cast<GPIO_TypeDef*>(port)->IDR & pin) != (uint32_t)0);
         }
-    };
 
+        struct gpio_token { };
+    };
 }
 
 namespace gpio {
@@ -88,5 +84,18 @@ namespace gpio {
     template <uint8_t pin>
     using PH = internal::GPIO<GPIOH_BASE, internal::gpio_pin<pin>()>;
 #endif
+
+    template <typename GPIO>
+    concept gpio_concept = requires { typename GPIO::gpio_token; };
+
+    constexpr inline void set(gpio_concept auto... gpio) {
+        (gpio.set(), ...);
+    }
+    constexpr inline void reset(gpio_concept auto... gpio) {
+        (gpio.reset(), ...);
+    }
+    constexpr inline void toggle(gpio_concept auto... gpio) {
+        (gpio.toggle(), ...);
+    }
 }
 }
