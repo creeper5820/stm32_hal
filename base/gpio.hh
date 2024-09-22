@@ -88,13 +88,13 @@ namespace gpio {
     template <typename GPIO>
     concept gpio_concept = requires { typename GPIO::gpio_token; };
 
-    constexpr inline void set(gpio_concept auto... gpio) {
+    inline void set(gpio_concept auto&... gpio) {
         (gpio.set(), ...);
     }
-    constexpr inline void reset(gpio_concept auto... gpio) {
+    inline void reset(gpio_concept auto&... gpio) {
         (gpio.reset(), ...);
     }
-    constexpr inline void toggle(gpio_concept auto... gpio) {
+    inline void toggle(gpio_concept auto&... gpio) {
         (gpio.toggle(), ...);
     }
 }
