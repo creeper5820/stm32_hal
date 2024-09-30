@@ -1,26 +1,25 @@
 #pragma once
 
 #include "interface.hh"
-#include <cstdint>
 
-#ifdef TIM_HandleTypeDef
-#include "tim.h"
-#endif
+#include <array>
+#include <cassert>
+#include <cstdint>
 
 namespace hal::time {
 
 constexpr size_t activity_limit = 10;
 
 inline void delay(uint32_t ms) {
-    uint32_t start = uwTick;
+    uint32_t start = ::uwTick;
     uint32_t wait = ms - 1;
     if (wait < HAL_MAX_DELAY)
-        wait += static_cast<uint32_t>(uwTickFreq);
-    while (uwTick - start < wait)
+        wait += static_cast<uint32_t>(::uwTickFreq);
+    while (::uwTick - start < wait)
         ;
 }
 
-#ifdef TIM_HandleTypeDef
+#ifdef HAL_TIM_MODULE_ENABLED
 inline void delay(TIM_HandleTypeDef* htim, uint32_t tick) {
     htim->Instance->CNT = 0;
     HAL_TIM_Base_Start(htim);
