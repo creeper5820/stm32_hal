@@ -2,6 +2,8 @@
 
 #include "interface.hh"
 
+#ifdef HAL_GPIO_MODULE_ENABLED
+
 namespace hal {
 namespace internal {
     // @brief calculate the address of the pin while compiling
@@ -12,7 +14,7 @@ namespace internal {
     }
 
     // @brief internal class GPIO
-    template <uint32_t port, uint16_t pin>
+    template <uint32_t _port, uint16_t _pin>
     class GPIO {
     public:
         enum class Status : bool {
@@ -20,30 +22,27 @@ namespace internal {
             RESET = 1
         };
 
-        inline void set() {
-            pointer()->BSRR = pin;
-        }
-
-        inline void reset() {
-            pointer()->BSRR = (uint32_t)pin << 16U;
-        }
-
-        inline void toggle() {
-            pointer()->BSRR
-                = ((pointer()->ODR & pin) << 16U)
-                | (~pointer()->ODR & pin);
-        }
-
-        inline Status status() {
-            return static_cast<Status>(
-                (pointer()->IDR & pin) != uint32_t(0));
-        }
-
         struct gpio_token { };
 
+        static inline void set() {
+            pointer()->BSRR = _pin;
+        }
+        static inline void reset() {
+            pointer()->BSRR = (uint32_t)_pin << 16U;
+        }
+        static inline void toggle() {
+            pointer()->BSRR
+                = ((pointer()->ODR & _pin) << 16U)
+                | (~pointer()->ODR & _pin);
+        }
+        static inline Status status() {
+            return static_cast<Status>(
+                (pointer()->IDR & _pin) != uint32_t(0));
+        }
+
     private:
-        constexpr GPIO_TypeDef* pointer() {
-            return reinterpret_cast<GPIO_TypeDef*>(port);
+        static constexpr GPIO_TypeDef* pointer() {
+            return reinterpret_cast<GPIO_TypeDef*>(_port);
         }
     };
 } // namespace internal
@@ -103,3 +102,5 @@ namespace gpio {
     }
 } // namespace gpio
 } // namespace hal
+
+#endif

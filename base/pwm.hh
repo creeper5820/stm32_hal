@@ -1,75 +1,80 @@
 #pragma once
 
-#ifdef TIM_HandleTypeDef
+#include "interface.hh"
 
-#include "main.h"
-#include "tim.h"
-#include <cassert>
-#include <cstdint>
-#include <cstring>
+#ifdef HAL_TIM_MODULE_ENABLED
 
-namespace base {
+namespace hal {
+
+enum class Mode {
+    N,
+    D,
+    I
+};
+
+namespace pwm {
+    constexpr inline uint32_t channel1 = 0x00000000U;
+    constexpr inline uint32_t channel2 = 0x00000004U;
+    constexpr inline uint32_t channel3 = 0x00000008U;
+    constexpr inline uint32_t channel4 = 0x0000000CU;
+    constexpr inline uint32_t channel5 = 0x00000010U;
+    constexpr inline uint32_t channel6 = 0x00000014U;
+
+    constexpr inline auto normal = Mode::N;
+    constexpr inline auto dma = Mode::D;
+    constexpr inline auto interrupt = Mode::I;
+
+    template <typename PWM>
+    concept pwm_concept = requires { typename PWM::pwm_token; };
+}
+
+template <TIM_HandleTypeDef* _handle, uint32_t _channel>
 class PWM {
-private:
-    TIM_HandleTypeDef* htim_;
-    uint32_t channel_;
-
 public:
-    enum class Mode {
-        Normal = 0,
-        DMA,
-        IT,
-    };
-
-    PWM(TIM_HandleTypeDef* htim, uint32_t channel)
-        : htim_(htim)
-        , channel_(channel)
-    {
-        HAL_TIM_PWM_Start(htim_, channel_);
+    template <Mode mode>
+    static inline void start(const uint32_t* buffer = nullptr, uint16_t length = 0) {
+        if (mode == Mode::N)
+            HAL_TIM_PWM_Start(_handle, _channel);
+        else if (mode == Mode::I)
+            HAL_TIM_PWM_Start_IT(_handle, _channel);
+        else if (mode == Mode::D)
+            HAL_TIM_PWM_Start_DMA(_handle, _channel, buffer, length);
     }
 
-    template <Mode mode>
-    void init(const uint32_t* buffer = nullptr, uint16_t length = 0)
-    {
-        if constexpr (mode == Mode::Normal) {
-            HAL_TIM_PWM_Start(htim_, channel_);
-        } else if constexpr (mode == Mode::DMA) {
-            assert(buffer != nullptr);
-            assert(length != 0);
-            HAL_TIM_PWM_Start_DMA(htim_, channel_, buffer, length);
-        } else if (mode == Mode::IT) {
-            HAL_TIM_PWM_Start_IT(htim_, channel_);
+    static inline void set_pwm(uint32_t pwm) {
+        compare_register() = pwm;
+    }
+
+    static inline void set_ratio(float ratio) {
+        set_pwm(ratio * (_handle->Init.Period));
+    }
+
+    static inline uint32_t period() {
+        return _handle->Init.Period;
+    }
+
+    struct pwm_token { };
+
+private:
+    // capture/compare register
+    static inline constexpr volatile uint32_t& compare_register() {
+        switch (_channel) {
+        case pwm::channel1:
+            return _handle->Instance->CCR1;
+        case pwm::channel2:
+            return _handle->Instance->CCR2;
+        case pwm::channel3:
+            return _handle->Instance->CCR3;
+        case pwm::channel4:
+            return _handle->Instance->CCR4;
+        case pwm::channel5:
+            return _handle->Instance->CCR5;
+        case pwm::channel6:
+            return _handle->Instance->CCR6;
         }
     }
-
-    void set_pwm(const uint32_t& pwm)
-    {
-        if (pwm > htim_->Init.Period)
-            return;
-
-        __HAL_TIM_SET_COMPARE(htim_, channel_, pwm);
-    }
-
-    void limit(float& ratio, float limit)
-    {
-        if (ratio > limit)
-            ratio = limit;
-
-        if (ratio < -limit)
-            ratio = -limit;
-    }
-
-    void set_pwm_ratio(float& ratio)
-    {
-        limit(ratio, 1);
-        __HAL_TIM_SET_COMPARE(htim_, channel_, ratio * (htim_->Init.Period));
-    }
-
-    uint32_t period() const noexcept
-    {
-        return htim_->Init.Period;
-    }
 };
-} // namespace base
+
+}
 
 #endif
