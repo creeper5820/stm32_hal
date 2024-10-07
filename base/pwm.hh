@@ -6,12 +6,6 @@
 
 namespace hal {
 
-enum class Mode {
-    N,
-    D,
-    I
-};
-
 namespace pwm {
     constexpr inline uint32_t channel1 = 0x00000000U;
     constexpr inline uint32_t channel2 = 0x00000004U;
@@ -19,10 +13,6 @@ namespace pwm {
     constexpr inline uint32_t channel4 = 0x0000000CU;
     constexpr inline uint32_t channel5 = 0x00000010U;
     constexpr inline uint32_t channel6 = 0x00000014U;
-
-    constexpr inline auto normal = Mode::N;
-    constexpr inline auto dma = Mode::D;
-    constexpr inline auto interrupt = Mode::I;
 
     template <typename PWM>
     concept pwm_concept = requires { typename PWM::pwm_token; };
@@ -32,12 +22,12 @@ template <TIM_HandleTypeDef* _handle, uint32_t _channel>
 class PWM {
 public:
     template <Mode mode>
-    static inline void start(const uint32_t* buffer = nullptr, uint16_t length = 0) {
-        if (mode == Mode::N)
+    static inline void start(uint32_t* buffer = nullptr, uint16_t length = 0) {
+        if (mode == Mode::Normal)
             HAL_TIM_PWM_Start(_handle, _channel);
-        else if (mode == Mode::I)
+        else if (mode == Mode::It)
             HAL_TIM_PWM_Start_IT(_handle, _channel);
-        else if (mode == Mode::D)
+        else if (mode == Mode::Dma)
             HAL_TIM_PWM_Start_DMA(_handle, _channel, buffer, length);
     }
 

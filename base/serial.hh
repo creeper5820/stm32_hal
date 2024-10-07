@@ -1,89 +1,89 @@
 #pragma once
 
 #include "interface.hh"
+#include <cstddef>
 
 #ifdef HAL_UART_MODULE_ENABLED
 
 namespace hal {
 
+template <UART_HandleTypeDef* _handle>
 class Serial {
 public:
-    enum class Status {
-        WAIT,
-        READY,
-    };
-
-    enum class Mode {
-        NORMAL,
-        IT,
-        DMA
-    };
-
     using Callback = void (*)(UART_HandleTypeDef*, uint16_t);
 
-public:
-    Serial(UART_HandleTypeDef* huart)
-        : huart_(huart) {
-        callback_ = [](UART_HandleTypeDef* huart, uint16_t size) { (void)huart; (void)size ; };
-    }
-
-    void init() {
-    }
-
-    void set_callback(const Callback& callback) {
+    void set_callback(Callback callback) {
         callback_ = callback;
     }
 
+    // Send
     template <Mode mode>
-    HAL_StatusTypeDef send(uint8_t* data, const uint16_t& size = 0, uint32_t timeout = 50) {
-        if constexpr (mode == Mode::NORMAL)
-            return HAL_UART_Transmit(huart_, data, size, timeout);
-        else if constexpr (mode == Mode::IT)
-            return HAL_UART_Transmit_IT(huart_, data, size);
-        else if constexpr (mode == Mode::DMA)
-            return HAL_UART_Transmit_DMA(huart_, data, size);
+    static inline Status send(uint8_t bytes[], uint16_t size, uint32_t timeout = 50) {
+        if (mode == Mode::Normal)
+            return static_cast<Status>(HAL_UART_Transmit(_handle, bytes, size, timeout));
+        else if (mode == Mode::It)
+            return static_cast<Status>(HAL_UART_Transmit_IT(_handle, bytes, size));
+        else if (mode == Mode::Dma)
+            return static_cast<Status>(HAL_UART_Transmit_DMA(_handle, bytes, size));
+    }
+    template <Mode mode, size_t length>
+    static inline Status send(const uint8_t (&bytes)[length], uint32_t timeout = 50) {
+        return send<mode>(bytes, length, timeout);
     }
 
+    // Receive
     template <Mode mode>
-    HAL_StatusTypeDef receive(uint8_t* data, const uint16_t& size = 0, uint32_t timeout = 50) {
-        if constexpr (mode == Mode::NORMAL)
-            return HAL_UART_Receive(huart_, data, size, timeout);
-        else if constexpr (mode == Mode::IT)
-            return HAL_UART_Receive_IT(huart_, data, size);
-        else if constexpr (mode == Mode::DMA)
-            return HAL_UART_Receive_DMA(huart_, data, size);
+    static inline Status receive(uint8_t bytes[], uint16_t size, uint32_t timeout = 50) {
+        if (mode == Mode::Normal)
+            return static_cast<Status>(HAL_UART_Receive(_handle, bytes, size, timeout));
+        else if (mode == Mode::It)
+            return static_cast<Status>(HAL_UART_Receive_IT(_handle, bytes, size));
+        else if (mode == Mode::Dma)
+            return static_cast<Status>(HAL_UART_Receive_DMA(_handle, bytes, size));
+    }
+    template <Mode mode, size_t length>
+    static inline Status receive(uint8_t (&bytes)[length], uint32_t timeout = 50) {
+        return receive<mode>(bytes, length, timeout);
     }
 
+    // Receive with idle
     template <Mode mode>
-    HAL_StatusTypeDef receive_idle(uint8_t* data, uint16_t* real_size, uint16_t size, uint32_t timeout = 50) {
-        if constexpr (mode == Mode::NORMAL) {
-            return HAL_UARTEx_ReceiveToIdle(huart_, data, size, real_size, timeout);
-        }
+    static inline Status receive_idle(uint8_t bytes[], uint16_t size) {
+        if (mode == Mode::It)
+            return static_cast<Status>(HAL_UARTEx_ReceiveToIdle_IT(_handle, bytes, size));
+        else if (mode == Mode::Dma)
+            return static_cast<Status>(HAL_UARTEx_ReceiveToIdle_DMA(_handle, bytes, size));
+    }
+    template <Mode mode, size_t length>
+    static inline Status receive_idle(uint8_t (&bytes)[length]) {
+        return receive_idle<mode>(bytes, length);
     }
 
-    template <Mode mode>
-    HAL_StatusTypeDef receive_idle(uint8_t* data, uint16_t size) {
-        if constexpr (mode == Mode::IT)
-            return HAL_UARTEx_ReceiveToIdle_IT(huart_, data, size);
-        else if constexpr (mode == Mode::DMA)
-            return HAL_UARTEx_ReceiveToIdle_DMA(huart_, data, size);
+    static inline Status receive_idle(uint8_t bytes[], uint16_t& receive_size,
+        uint16_t max_size, uint32_t timeout = 50) {
+        return static_cast<Status>(HAL_UARTEx_ReceiveToIdle(
+            _handle, bytes, max_size, &receive_size, timeout));
+    }
+    template <size_t length>
+    static inline Status receive_idle(uint8_t (&bytes)[length],
+        uint16_t& receive_size, uint32_t timeout = 50) {
+        return receive_idle(bytes, receive_size, length, timeout);
     }
 
-    void callback(UART_HandleTypeDef* huart, uint16_t size) {
-        if (huart_ != huart)
+    // Callback
+    static inline void callback(UART_HandleTypeDef* huart, uint16_t size) {
+        if (_handle != huart)
             return;
         callback_(huart, size);
     }
 
     template <Mode mode>
-    void HelloWorld() {
-        send<mode>((uint8_t*)&"Hello World!\n", sizeof("Hello World!"), 50);
+    static inline void hello_world() {
+        send<mode>((uint8_t*)&"Hello World!\n", 50);
     }
 
 private:
-    UART_HandleTypeDef* huart_;
-
-    Callback callback_;
+    static inline Callback callback_ { [](UART_HandleTypeDef*, uint16_t) { } };
 };
 }
 
