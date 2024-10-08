@@ -1,6 +1,7 @@
 #pragma once
 
 #include "interface.hh"
+#include <cstdint>
 
 #ifdef HAL_TIM_MODULE_ENABLED
 
@@ -13,6 +14,15 @@ namespace pwm {
     constexpr inline uint32_t channel4 = 0x0000000CU;
     constexpr inline uint32_t channel5 = 0x00000010U;
     constexpr inline uint32_t channel6 = 0x00000014U;
+
+    template <size_t index>
+    constexpr inline uint32_t get_channel_from_index() {
+        return (index - 1) << 2;
+    }
+    template <uint32_t channel>
+    constexpr inline size_t get_index_from_channel() {
+        return (channel >> 2) + 1;
+    }
 
     template <typename PWM>
     concept pwm_concept = requires { typename PWM::pwm_token; };
@@ -48,20 +58,8 @@ public:
 private:
     // capture/compare register
     static inline constexpr volatile uint32_t& compare_register() {
-        switch (_channel) {
-        case pwm::channel1:
-            return _handle->Instance->CCR1;
-        case pwm::channel2:
-            return _handle->Instance->CCR2;
-        case pwm::channel3:
-            return _handle->Instance->CCR3;
-        case pwm::channel4:
-            return _handle->Instance->CCR4;
-        case pwm::channel5:
-            return _handle->Instance->CCR5;
-        case pwm::channel6:
-            return _handle->Instance->CCR6;
-        }
+        auto address = &_handle->Instance->CCR1;
+        return *(address + pwm::get_index_from_channel<_channel>() - 1);
     }
 };
 

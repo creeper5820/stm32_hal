@@ -1,7 +1,6 @@
 #pragma once
 
 #include "interface.hh"
-#include "stm32h7xx_hal_tim.h"
 #include <cassert>
 #include <cstdint>
 
