@@ -10,11 +10,6 @@ enum class Mode : uint8_t {
     It,
 };
 
-enum class Status : uint8_t {
-    Ready = 0x00,
-    Error = 0x01,
-    Busy = 0x02,
-    Timeout = 0x03
-};
+enum class Status : uint8_t { Ready = 0x00, Error = 0x01, Busy = 0x02, Timeout = 0x03 };
 
 }

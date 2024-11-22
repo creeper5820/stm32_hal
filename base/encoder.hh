@@ -8,8 +8,7 @@
 
 namespace hal {
 
-template <TIM_HandleTypeDef* _timer>
-class Encoder {
+template <TIM_HandleTypeDef* _timer> class Encoder {
 public:
     static inline void setup(bool direction = true) {
         direction_ = direction;
@@ -28,10 +27,8 @@ public:
 
         value = current - last;
 
-        if (value < -static_cast<int32_t>(period() / 2))
-            value += period();
-        if (value > static_cast<int32_t>(period() / 2))
-            value -= period();
+        if (value < -static_cast<int32_t>(period() / 2)) value += period();
+        if (value > static_cast<int32_t>(period() / 2)) value -= period();
 
         last = current;
         return value * (direction_ ? 1 : -1);
