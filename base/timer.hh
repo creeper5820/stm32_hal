@@ -3,6 +3,7 @@
 #include "interface.hh"
 
 #include <cassert>
+#include <concepts>
 #include <cstdint>
 
 namespace hal {
