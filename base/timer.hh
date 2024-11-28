@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <cstdint>
+#include <utility>
 
 namespace hal {
 

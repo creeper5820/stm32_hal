@@ -3,6 +3,7 @@
 #include "interface.hh"
 #include <concepts>
 #include <cstddef>
+#include <utility>
 
 #ifdef HAL_UART_MODULE_ENABLED
 
