@@ -77,13 +77,15 @@ namespace internal {
             };
         };
 
-        static inline void setup(const auto&& mode, const auto&& config) {
+        static inline void setup(const auto& mode, const auto& config) {
             gpio_set_mode(_port, mode, config, _pin);
         }
 
         struct templates {
             static inline void normal() {
-                GPIO<_port, _pin>::setup::output_pushpull::output_50_mhz();
+                GPIO<_port, _pin>::setup //
+                    ::config::output_pushpull //
+                    ::mode::output_50_mhz(); //
             }
         };
 
