@@ -1,6 +1,5 @@
 #pragma once
 
-#include "interface.hh"
 #include <cstdint>
 
 #ifdef HAL_TIM_MODULE_ENABLED
@@ -30,10 +29,8 @@ template <TIM_HandleTypeDef* _handle, uint32_t _channel> class PWM {
 public:
     template <Mode mode> static inline void start(uint32_t* buffer = nullptr, uint16_t length = 0) {
         if (mode == Mode::Normal) HAL_TIM_PWM_Start(_handle, _channel);
-        else if (mode == Mode::It)
-            HAL_TIM_PWM_Start_IT(_handle, _channel);
-        else if (mode == Mode::Dma)
-            HAL_TIM_PWM_Start_DMA(_handle, _channel, buffer, length);
+        else if (mode == Mode::It) HAL_TIM_PWM_Start_IT(_handle, _channel);
+        else if (mode == Mode::Dma) HAL_TIM_PWM_Start_DMA(_handle, _channel, buffer, length);
     }
 
     static inline void set_pwm(uint32_t pwm) { compare_register() = pwm; }

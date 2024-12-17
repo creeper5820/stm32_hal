@@ -1,6 +1,5 @@
 #pragma once
 
-#include "interface.hh"
 #include <concepts>
 #include <cstddef>
 #include <utility>
@@ -80,7 +79,7 @@ public:
     }
 
 private:
-    static inline SerialCallback callback_ { [](UartHandler, uint16_t) { } };
+    static inline SerialCallback callback_ { [](UartHandler, uint16_t) {} };
 };
 
 namespace internal {

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "interface.hh"
 #include <cassert>
 #include <cstdint>
 
