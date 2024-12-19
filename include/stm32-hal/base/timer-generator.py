@@ -8,14 +8,8 @@ header = """#pragma once
 #include <libopencm3/stm32/timer.h>
 
 namespace hal::timer {
-template <uint32_t _peripheral> class Timer;
-template <uint32_t _peripheral> constexpr rcc_periph_clken timer_rcc();
-template <uint32_t _peripheral> constexpr rcc_periph_rst timer_rst();
-template <uint32_t _peripheral> constexpr uint8_t timer_nvic();
-template <uint32_t _peripheral> constexpr uint8_t timer_nvic_brk();
-template <uint32_t _peripheral> constexpr uint8_t timer_nvic_up();
-template <uint32_t _peripheral> constexpr uint8_t timer_nvic_trg_com();
-template <uint32_t _peripheral> constexpr uint8_t timer_nvic_cc();
+template <uint32_t _peripheral> class TimerImpl;
+template <uint32_t _peripheral> struct interface;
 """
 
 footer = """} // namespace hal::timer
@@ -23,44 +17,36 @@ footer = """} // namespace hal::timer
 
 timer_template = """
 #if defined({peripheral_base})
-using _{index:02d} = Timer<TIM{index}>;
-template <> constexpr rcc_periph_clken timer_rcc<TIM{index}>() {{ return RCC_TIM{index}; }}
-template <> constexpr rcc_periph_rst timer_rst<TIM{index}>() {{ return RST_TIM{index}; }}
-template <> constexpr uint8_t timer_nvic<TIM{index}>() {{
+template <> struct interface<TIM{index}> {{
+    static constexpr rcc_periph_clken rcc = RCC_TIM{index};
+    static constexpr rcc_periph_rst rst = RST_TIM{index};
 #ifdef NVIC_TIM{index}_IRQ
-    return NVIC_TIM{index}_IRQ;
+    static constexpr uint8_t nvic = NVIC_TIM{index}_IRQ;
 #else
-    return NVIC_IRQ_COUNT;
+    static constexpr uint8_t nvic = NVIC_IRQ_COUNT;
 #endif
-}}
-template <> constexpr uint8_t timer_nvic_brk<TIM{index}>() {{
 #ifdef NVIC_TIM{index}_BRK_IRQ
-    return NVIC_TIM{index}_BRK_IRQ;
+    static constexpr uint8_t nvic_brk = NVIC_TIM{index}_BRK_IRQ;
 #else
-    return NVIC_IRQ_COUNT;
+    static constexpr uint8_t nvic_brk = NVIC_IRQ_COUNT;
 #endif
-}}
-template <> constexpr uint8_t timer_nvic_up<TIM{index}>() {{
 #ifdef NVIC_TIM{index}_UP_IRQ
-    return NVIC_TIM{index}_UP_IRQ;
+    static constexpr uint8_t nvic_up = NVIC_TIM{index}_UP_IRQ;
 #else
-    return NVIC_IRQ_COUNT;
+    static constexpr uint8_t nvic_up = NVIC_IRQ_COUNT;
 #endif
-}}
-template <> constexpr uint8_t timer_nvic_trg_com<TIM{index}>() {{
 #ifdef NVIC_TIM{index}_TRG_COM_IRQ
-    return NVIC_TIM{index}_TRG_COM_IRQ;
+    static constexpr uint8_t nvic_trg_com = NVIC_TIM{index}_TRG_COM_IRQ;
 #else
-    return NVIC_IRQ_COUNT;
+    static constexpr uint8_t nvic_trg_com = NVIC_IRQ_COUNT;
 #endif
-}}
-template <> constexpr uint8_t timer_nvic_cc<TIM{index}>() {{
 #ifdef NVIC_TIM{index}_CC_IRQ
-    return NVIC_TIM{index}_CC_IRQ;
+    static constexpr uint8_t nvic_cc = NVIC_TIM{index}_CC_IRQ;
 #else
-    return NVIC_IRQ_COUNT;
+    static constexpr uint8_t nvic_cc = NVIC_IRQ_COUNT;
 #endif
-}}
+}};
+using _{index:02d} = TimerImpl<TIM{index}>;
 #endif // {peripheral_base}
 """
 
@@ -82,6 +68,9 @@ timers = [
     "TIM15_BASE",
     "TIM16_BASE",
     "TIM17_BASE",
+    "TIM18_BASE",
+    "TIM19_BASE",
+    "TIM20_BASE",
     "TIM21_BASE",
     "TIM22_BASE",
 ]
