@@ -246,6 +246,17 @@ public:
             for (const auto& bit : data)
                 transmit_blocking(bit);
         }
+
+        struct dma {
+            struct receive {
+                static void enable() { usart_enable_rx_dma(_usart); }
+                static void disable() { usart_disable_rx_dma(_usart); }
+            };
+            struct transmit {
+                static void enable() { usart_enable_tx_dma(_usart); }
+                static void disable() { usart_disable_tx_dma(_usart); }
+            };
+        };
     };
     struct attribute {
         static constexpr uint32_t usart = _usart;
